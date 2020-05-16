@@ -25,6 +25,7 @@ import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
@@ -38,14 +39,6 @@ class GameFragment : Fragment() {
 
     private lateinit var viewModel: GameViewModel
 
-//    // The current word
-//    private var word = ""
-//
-//    // The current score
-//    private var score = 0
-
-    // The list of words - the front of the list is the next word to guess
-    private lateinit var wordList: MutableList<String>
 
     private lateinit var binding: GameFragmentBinding
 
@@ -57,6 +50,7 @@ class GameFragment : Fragment() {
         Log.i("GameFragment", "Called ViewModelProviders.of")
         viewModel = ViewModelProviders.of(this).get(GameViewModel::class.java)
 
+
         // Inflate view and obtain an instance of the binding class
         binding = DataBindingUtil.inflate(
                 inflater,
@@ -65,54 +59,73 @@ class GameFragment : Fragment() {
                 false
         )
 
+        // Set the viewmodel for databinding - this allows the bound layout access
+// to all the data in the ViewModel
+        binding.gameViewModel = viewModel
 
 
-        binding.correctButton.setOnClickListener { onCorrect() }
-        binding.skipButton.setOnClickListener { onSkip() }
-        binding.endGameButton.setOnClickListener { onEndGame() }
-        updateScoreText()
-        updateWordText()
+        /** Setting up LiveData observation relationship **/
+        viewModel.score.observe(viewLifecycleOwner, Observer { newScore ->
+            binding.scoreText.text = newScore.toString()
+        })
+
+        /** Setting up LiveData observation relationship **/
+        viewModel.word.observe(viewLifecycleOwner, Observer { newWord ->
+            binding.wordText.text = newWord
+        })
+
+        viewModel.isgameFinsihed.observe(viewLifecycleOwner, Observer { gameFinsihedChange ->
+            if (gameFinsihedChange) {
+                gameFinished()
+            }
+        })
+
+        // removed below because now ive made onlcick on xml layout itself
+
+//        binding.correctButton.setOnClickListener { onCorrect() }
+//        binding.skipButton.setOnClickListener { onSkip() }
+//        binding.endGameButton.setOnClickListener { onEndGame() }
+//        updateScoreText()
+//        updateWordText()
         return binding.root
 
     }
-
-    private fun onEndGame() {
-        gameFinished()
-    }
+//
+//    private fun onEndGame() {
+//        gameFinished()
+//    }
 
     private fun gameFinished() {
         Toast.makeText(activity, "Game has just finished", Toast.LENGTH_SHORT).show()
-        val action = GameFragmentDirections.actionGameToScore(viewModel.score)
-        action.score = viewModel.score
+        val action = GameFragmentDirections.actionGameToScore(viewModel.score.value ?: 0)
         NavHostFragment.findNavController(this).navigate(action)
     }
 
 
-       /** Methods for buttons presses **/
+    /** Methods for buttons presses **/
 
-    private fun onSkip() {
-           viewModel.onSkip()
-           updateWordText()
-           updateScoreText()
-
-    }
-
-    private fun onCorrect() {
-        viewModel.onCorrect()
-        updateWordText()
-        updateScoreText()
-    }
-
-
+//    private fun onSkip() {
+//        viewModel.onSkip()
+////        updateWordText()
+////        updateScoreText()
+//
+//    }
+//
+//    private fun onCorrect() {
+//        viewModel.onCorrect()
+////        updateWordText()
+////        updateScoreText()
+//    }
 
 
     /** Methods for updating the UI **/
+    // these below methods are not required as we added an observer, so im keeping it
 
-    private fun updateWordText() {
-        binding.wordText.text = viewModel.word
-    }
-
-    private fun updateScoreText() {
-        binding.scoreText.text = viewModel.score.toString()
-    }
+//    private fun updateWordText() {
+//        binding.wordText.text = viewModel.word.value
+//    }
+//
+//    private fun updateScoreText() {
+//        binding.scoreText.text = viewModel.score.value.toString()
+//    }
 }
