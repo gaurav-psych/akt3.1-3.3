@@ -63,16 +63,20 @@ class GameFragment : Fragment() {
 // to all the data in the ViewModel
         binding.gameViewModel = viewModel
 
+        // Specify the fragment view as the lifecycle owner of the binding.
+// This is used so that the binding can observe LiveData updates
+        binding.lifecycleOwner = viewLifecycleOwner
 
-        /** Setting up LiveData observation relationship **/
-        viewModel.score.observe(viewLifecycleOwner, Observer { newScore ->
-            binding.scoreText.text = newScore.toString()
-        })
 
-        /** Setting up LiveData observation relationship **/
-        viewModel.word.observe(viewLifecycleOwner, Observer { newWord ->
-            binding.wordText.text = newWord
-        })
+//        /** Setting up LiveData observation relationship **/
+//        viewModel.score.observe(viewLifecycleOwner, Observer { newScore ->
+//            binding.scoreText.text = newScore.toString()
+//        })
+//
+//        /** Setting up LiveData observation relationship **/
+//        viewModel.word.observe(viewLifecycleOwner, Observer { newWord ->
+//            binding.wordText.text = newWord
+//        })
 
         viewModel.isgameFinsihed.observe(viewLifecycleOwner, Observer { gameFinsihedChange ->
             if (gameFinsihedChange) {
